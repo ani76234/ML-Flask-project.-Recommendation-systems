@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Recommender</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin-top: 50px;
+        }
+        .card {
+            padding: 20px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .star-rating {
+            color: gold;
+            font-size: 16px;
+        }
+        .restaurant-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 5px;
+        }
+        .restaurant-name {
+            font-weight: bold;
+        }
+        .autocomplete-list {
+            position: absolute;
+            width: 100%;
+            background: white;
+            border: 1px solid #ccc;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+            border-radius: 5px;
+        }
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #ddd;
+        }
+        .autocomplete-item:hover {
+            background: #f0f0f0;
+        }
+        .btn-view {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-view:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mb-4">🍽️ Restaurant Recommendation System</h2>
+        <div class="card">
+            <form id="recommendationForm">
+                <label for="cuisine" class="form-label">Search Cuisine:</label>
+                <input type="text" id="cuisine" class="form-control mb-2" placeholder="Type a cuisine..." autocomplete="off">
+                <div id="autocomplete-container" class="autocomplete-list"></div>
+                <button type="submit" class="btn btn-primary w-100 mt-2">Get Recommendations</button>
+            </form>
+        </div>
+
+        <div class="mt-4">
+            <h3>Recommended Restaurants:</h3>
+            <div id="recommendations" class="mt-2"></div>
+        </div>
+    </div>
+
+    <script>
+        let allCuisines = [];
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("/get_cuisines")
+                .then(response => response.json())
+                .then(data => {
+                    allCuisines = data;
+                });
+        });
+
+        document.getElementById("cuisine").addEventListener("input", function () {
+            let input = this.value.toLowerCase();
+            let exactMatch = allCuisines.filter(cuisine => cuisine.toLowerCase() === input);
+            let partialMatches = allCuisines
+                .filter(cuisine => cuisine.toLowerCase().includes(input) && cuisine.toLowerCase() !== input)
+                .slice(0, 4); // Show only top 4 partial matches
+
+            let filtered = [...exactMatch, ...partialMatches];
+            showAutocompleteList(filtered);
+        });
+
+        function showAutocompleteList(cuisines) {
+            let container = document.getElementById("autocomplete-container");
+            container.innerHTML = "";
+
+            cuisines.forEach(cuisine => {
+                let div = document.createElement("div");
+                div.className = "autocomplete-item";
+                div.textContent = cuisine;
+                div.onclick = function () {
+                    document.getElementById("cuisine").value = cuisine;
+                    container.innerHTML = "";
+                };
+                container.appendChild(div);
+            });
+
+            container.style.display = cuisines.length ? "block" : "none";
+        }
+
+        document.getElementById("recommendationForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+            let cuisine = document.getElementById("cuisine").value;
+
+            fetch("/recommend", {
+                method: "POST",
+                body: new URLSearchParams({ cuisine: cuisine }),
+                headers: { "Content-Type": "application/x-www-form-urlencoded" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                let container = document.getElementById("recommendations");
+                container.innerHTML = "";
+
+                if (data.length === 0 || data[0].name === "No recommendations available") {
+                    container.innerHTML = "<p class='text-danger'><strong>No recommendations available</strong></p>";
+                    return;
+                }
+
+                data.forEach(item => {
+                    let stars = "⭐".repeat(Math.round(item.rate));
+
+                    let card = document.createElement("div");
+                    card.className = "restaurant-card";
+
+                    card.innerHTML = `
+                        <div>
+                            <span class="restaurant-name">${item.name}</span> - ${item.location}
+                            <br>
+                            <span class="star-rating">${stars}</span>
+                        </div>
+                        <a href="${item.url}" target="_blank" class="btn-view">View</a>
+                    `;
+                    container.appendChild(card);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
