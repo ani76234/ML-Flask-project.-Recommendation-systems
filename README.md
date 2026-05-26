@@ -16,9 +16,9 @@ A machine learning-powered recommendation system built using Flask and Python. T
 
 * **Backend:** Flask, Python
 * **Machine Learning:** scikit-learn / pandas / NumPy
-* **Frontend:** HTML, CSS, Bootstrap *(update if different)*
-* **Database:** CSV / SQLite / MongoDB *(update if used)*
-* **Visualization:** Matplotlib / Seaborn *(if used)*
+* **Frontend:** HTML, CSS, Bootstrap
+* **Database:** Zomato_reduced.csv(Taken from kaggle and shortened using feature selection(Chi-sqaure test, correlation test etc.) and sampling. Orignal dataset: https://www.kaggle.com/datasets/shrutimehta/zomato-restaurants-data
+* **Visualization:** Matplotlib / Seaborn
 
 ## 📂 Project Structure
 
@@ -90,14 +90,12 @@ http://127.0.0.1:5000
 
 This project uses machine learning algorithms to analyze user or item data and generate recommendations.
 
-Possible techniques used include:
+Techniques used include:
 
 * Content-Based Filtering
 * Collaborative Filtering
 * K-Nearest Neighbors (KNN)
-* Cosine Similarity
 
-*(Update this section according to your actual implementation.)*
 
 ## 📊 Libraries Used
 
@@ -107,16 +105,6 @@ Possible techniques used include:
 * `scikit-learn`
 * `matplotlib`
 * `pickle`
-
-## 📸 Screenshots
-
-Add screenshots of your project here.
-
-Example:
-
-```md
-![Homepage](./screenshots/homepage.png)
-```
 
 ## 🎯 Learning Objectives
 
